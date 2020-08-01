@@ -3,13 +3,16 @@
 #define SERVO_PIN   8
 #define TRIG_PIN    9
 #define ECHO_PIN    10
-#define SPK_PIN    11
+#define SPK_PIN    12
 
 #define SOUND
 
 const int SONAR_DELAY = 30;
-const int threshold = 30;
+const int threshold = 100;
+const int PING_FREQ = 1500;
 char active = 0;
+// maxTimeout defualt value is 4 meters
+int maxTimeout = 23323;
 
 struct servoData
 {
@@ -60,7 +63,7 @@ double measureDistance() {
   delayMicroseconds(10);
   digitalWrite(TRIG_PIN, LOW);
   // Reads the echoPin, returns the sound wave travel time in microseconds
-  duration = pulseIn(ECHO_PIN, HIGH);
+  duration = pulseIn(ECHO_PIN, HIGH, maxTimeout);
   // Calculating the distance
   distance = duration * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
   // Displays the distance on the Serial Monitor
@@ -80,7 +83,7 @@ double measureDistance() {
 
 void triggerDown() {
 #ifdef SOUND
-  tone(SPK_PIN, 400, 200);
+  tone(SPK_PIN, PING_FREQ, 200);
 #endif
 }
 
@@ -100,8 +103,9 @@ void setup() {
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
   pinMode(SPK_PIN, OUTPUT);
-
   Serial.begin(9600);
+  maxTimeout = (int)(((threshold / 100.0f) / (343.0f / 2)) * (1000000 * 1.2f));
+  
   initServo();
   beepStart();
 }
