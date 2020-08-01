@@ -9,8 +9,8 @@ byte [] intBuffer = new byte[4];
 
 //Display disp;
 Serial arduino;
-final String portName = "/dev/ttyUSB0";
-final int MAX_RANGE = 30;
+final String portName = "COM3";
+final int MAX_RANGE = 40;
 
 class Line {
   color c;
@@ -256,6 +256,8 @@ void setup() {
   center = new PVector(widthVal / 2, heightVal);
   servo = new Servo();
   arduino = new Serial(this, portName, 9600);
+  delay(2000);
+  arduino.write("" + MAX_RANGE +"\n");
   //disp = new Display();
 }
 
@@ -276,30 +278,31 @@ void draw() {
         dist = parseInt(delimeted[1]);
       }
       catch(Exception e) {
+        println("error");
         return;
       }
+
+      background(0);
+      g.sketch();
+
+      lineEdge = getCircle(angle, /*radius*/ widthVal / 2, center);
+      stroke(color(50, 255, 50));
+      strokeWeight(2);
+      line(center.x, center.y, lineEdge.x, lineEdge.y);
+
+      drawBorder();
+
+      if (dist != -1) {
+        PVector temp = calcPointFromMeasureRel(angle, dist);
+        marks[angle] = new Match(temp);
+      }
+
+      if (marks[angle] != null && marks[angle].ttl <= 0) {
+        marks[angle] = null;
+      }
+
+
+      iterateMarks();
     }
-
-    background(0);
-    g.sketch();
-
-    lineEdge = getCircle(angle, radius, center);
-    stroke(color(0, 255, 0));
-    strokeWeight(2);
-    line(center.x, center.y, lineEdge.x, lineEdge.y);
-
-    drawBorder();
-
-    if (dist != -1) {
-      PVector temp = calcPointFromMeasureRel(angle, dist);
-      marks[angle] = new Match(temp);
-    }
-
-    if (marks[angle] != null && marks[angle].ttl <= 0) {
-      marks[angle] = null;
-    }
-
-
-    iterateMarks();
   }
 }

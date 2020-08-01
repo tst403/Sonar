@@ -8,7 +8,7 @@
 #define SOUND
 
 const int SONAR_DELAY = 30;
-const int threshold = 100;
+int threshold = 100;
 const int PING_FREQ = 1500;
 char active = 0;
 // maxTimeout defualt value is 4 meters
@@ -68,15 +68,16 @@ double measureDistance() {
   distance = duration * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
   // Displays the distance on the Serial Monitor
 
-  if (distance <= threshold) {
+  if (distance <= threshold && distance != 0) {
     if (active == 0) {
       triggerDown();
     }
     active = 1;
   }
-  else {
+  else{
     active = 0;
   }
+
 
   return active == 0 ? -1 : distance;
 }
@@ -98,14 +99,26 @@ void handleTick(int currentAngle) {
   serv.write(currentAngle);
 }
 
+int getMaxRange() {
+  String inString = "";
+
+  while (Serial.available() == 0) {
+    delay(1);
+  }
+
+  return Serial.parseInt();
+}
+
 void setup() {
   serv.attach(SERVO_PIN);
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
   pinMode(SPK_PIN, OUTPUT);
   Serial.begin(9600);
+
+  threshold = getMaxRange();
   maxTimeout = (int)(((threshold / 100.0f) / (343.0f / 2)) * (1000000 * 1.2f));
-  
+
   initServo();
   beepStart();
 }
